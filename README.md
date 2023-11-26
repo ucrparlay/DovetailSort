@@ -1,27 +1,49 @@
 
-# ParlayLib - A Toolkit for Programming Parallel Algorithms on Shared-Memory Multicore Machines
+# DovetailSort: A Parallel Integer Sort Algorithm
+This repository contains code for our paper "Parallel Integer Sort: Theory and Practice".
+Our testing code is in ``include/parlay/integer_sort.cpp`` and our algorithm is implemented in ``include/parlay/integer_sort.h``. The rest of the code are from the publicly available library [ParlayLib](https://github.com/cmuparlay/parlaylib).
+ 
 
-[![Build status](https://github.com/cmuparlay/parlaylib/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/cmuparlay/parlaylib/actions)
-[![codecov](https://codecov.io/gh/cmuparlay/parlaylib/branch/master/graph/badge.svg)](https://codecov.io/gh/cmuparlay/parlaylib)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Requirements
+--------
++ g++ or clang with C++17 features support (tested with g++ 12.1.1 and clang 14.0.6) on Linux machines.
 
+Getting Code
+--------
+The code can be downloaded using git:
+```bash
+git clone https://github.com/ucrparlay/DovetailSort.git
+```
 
-ParlayLib is a C++ library for developing efficient parallel algorithms and software on shared-memory multicore machines. It provides additional tools and primitives that go beyond what is available in the C++ standard library, and simplifies the task of programming provably efficient and scalable parallel algorithms. It consists of a sequence data type (analogous to std::vector), many parallel routines and algorithms, a work-stealing scheduler to support nested parallelism, and a scalable memory allocator. It has been developed over a period of seven years and used in a variety of software including the [PBBS benchmark suite](http://www.cs.cmu.edu/~pbbs/benchmarks.html), the [Ligra](http://jshun.github.io/ligra/), [Julienne](https://dl.acm.org/doi/pdf/10.1145/3087556.3087580), and [Aspen](https://github.com/ldhulipala/aspen) graph processing frameworks, the [Graph Based Benchmark Suite](https://github.com/ParAlg/gbbs), and the [PAM](https://cmuparlay.github.io/PAMWeb/) library for parallel balanced binary search trees, and an implementation of the TPC-H benchmark suite.
+Compilation
+--------
+A makefile is provided in ``include/parlay/``.
+```bash
+cd include/parlay/
+make
+```
 
-Parlay is designed to be reasonably portable by being built upon mostly standards-compliant modern C++. It builds on [GCC](https://gcc.gnu.org/) and [Clang](https://clang.llvm.org/) on Linux, GCC and Apple Clang on OSX, and Microsoft Visual C++ ([MSVC](https://visualstudio.microsoft.com/vs/)) and [MinGW](http://www.mingw.org/) on Windows. It is also tested on GCC and Clang via Windows Subsystem for Linux ([WSL](https://docs.microsoft.com/en-us/windows/wsl/about)) and [Cygwin](https://www.cygwin.com/). Support beyond x86-64 has not yet been explored. We would warmly welcome contributions that seek to achieve this.
+Running Code
+--------
+```bash
+numactl -i all ./integer_sort <n>
+```
+where n is the input size (by default $10^9$). It runs on all synthetic datasets (uniform, exponential, Zipfian, and bit-exponential distributions) with both 32-bit and 64-bit by default.
 
-# Documentation
+Contact
+--------
+If you have any questions, please submit an issue to this repository (recommended) or send an email to the author at xdong038@ucr.edu.  
 
-You can find Parlay's full reference documentation [here](https://cmuparlay.github.io/parlaylib/)
+Reference
+--------
+Xiaojun Dong, Laxman Dhulipala, Yan Gu, Yihan Sun. Parallel Integer Sort: Theory and Practice. To appear at *ACM SIGPLAN Symposium on Principles and Practice of Parallel Programming (PPoPP)*, 2024.  
 
-# Examples
-
-Parlay comes with over 50 example applications that you can learn from. You can find them in the [examples](./examples) directory.
-
-# Developer documentation
-
-If you are interested in contributing to Parlay, the following pages describe useful information about our testing and benchmarking setups. If you just want to use Parlay in your own projects, these links are not relevant to you.
-
-* [Static analysis](./analysis/README.md)
-* [Unit tests](./test/README.md)
-* [Benchmarks](./benchmark/README.md)
+If you use our code, please cite our paper:
+```
+@inproceedings{dong2024parallel,
+  author    = {Dong, Xiaojun and Dhulipala, Laxman and Gu, Yan and Sun, Yihan},
+  title     = {Parallel Integer Sort: Theory and Practice},
+  booktitle = {ACM SIGPLAN Symposium on Principles and Practice of Parallel Programming (PPoPP)},
+  year      = {2024},
+}
+```
