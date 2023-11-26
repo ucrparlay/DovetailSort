@@ -119,7 +119,8 @@ std::pair<sequence<size_t>, bool> count_sort_(slice<InIterator, InIterator> In,
                                               slice<KeyIterator, KeyIterator> Keys,
                                               size_t num_buckets,
                                               float parallelism = 1.0,
-                                              bool skip_if_in_one = false) {
+                                              bool skip_if_in_one = false, sequence<uint32_t> light_id = {}) {
+
   using T = typename slice<InIterator, InIterator>::value_type;
   size_t n = In.size();
   size_t num_threads = num_workers();
@@ -132,7 +133,7 @@ std::pair<sequence<size_t>, bool> count_sort_(slice<InIterator, InIterator> In,
   // size_t bucket_upper =
   //     1 + n * sizeof(T) / (4 * num_buckets * sizeof(s_size_t));
   // size_t num_blocks = (std::min)(bucket_upper, (std::max)(par_lower, size_lower));
-  size_t num_blocks = 1 + n * sizeof(T) / std::max<size_t>(num_buckets * 500, 5000);
+  size_t num_blocks = 1 + n * sizeof(T) / (num_buckets * 5000);
   
   // if insufficient parallelism, sort sequentially
   if (n < SEQ_THRESHOLD || num_blocks == 1 || num_threads == 1) {
@@ -169,10 +170,32 @@ std::pair<sequence<size_t>, bool> count_sort_(slice<InIterator, InIterator> In,
 
   // if all in one bucket, then no need to sort
   size_t num_non_zero = 0;
-  for (size_t i = 0; i < num_buckets; i++)
-    num_non_zero += (bucket_offsets[i] > 0);
+  bool all_heavy = false;
+  if (light_id.size() != 0) {
+    assert(light_id.back() + 1 == num_buckets);
+    all_heavy = true;
+    for (size_t i = 0; i + 1 < light_id.size(); i++) {
+      bool non_zero = false;
+      for (size_t j = light_id[i]; j < light_id[i + 1]; j++) {
+        if (bucket_offsets[j] > 0) {
+          if (j == light_id[i]) {
+            all_heavy = false;
+          }
+          non_zero = true;
+          break;
+        }
+      }
+      if (non_zero) {
+        num_non_zero++;
+      }
+    }
+    num_non_zero += (bucket_offsets.back() > 0);
+  } else {
+    for (size_t i = 0; i < num_buckets; i++)
+      num_non_zero += (bucket_offsets[i] > 0);
+  }
   [[maybe_unused]] size_t total = scan_inplace(make_slice(bucket_offsets), plus<size_t>());
-  if (skip_if_in_one && num_non_zero == 1) {
+  if (skip_if_in_one && num_non_zero == 1 && !all_heavy) {
     return std::make_pair(std::move(bucket_offsets), true);
   }
 
