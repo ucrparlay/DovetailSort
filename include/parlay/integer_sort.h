@@ -10,97 +10,11 @@
 #include "sequence.h"
 #include "slice.h"
 
-// namespace std {
-// template<>
-// class numeric_limits<__uint128_t> {
-// public:
-// constexpr static __uint128_t max() noexcept {
-//__uint128_t v = 0;
-// return ~v;
-//}
-//};
-//}  // namespace std
-
 namespace parlay {
 
 constexpr size_t INTEGER_SORT_BASE_CASE_SIZE = 1 << 14;
 constexpr size_t SAMPLE_QUOTIENT = 500;
 constexpr size_t MERGE_BASE_CASE_SIZE = 1 << 17;
-
-template <typename assignment_tag, typename s_size_t, typename InIterator,
-          typename OutIterator, typename KeyIterator>
-sequence<size_t> count_sort2_(slice<InIterator, InIterator> In,
-                              slice<OutIterator, OutIterator> Out,
-                              slice<KeyIterator, KeyIterator> Keys,
-                              size_t num_buckets,
-                              [[maybe_unused]] double parallelism = 1.0) {
-  size_t n = In.size();
-  const size_t sqrt = std::sqrt(n);
-  size_t num_blocks = size_t{1} << log2_up(sqrt / 4 + 1);
-  constexpr size_t SEQ_THRESHOLD = 1 << 13;
-  if (n < SEQ_THRESHOLD || num_blocks == 1) {
-    return internal::seq_count_sort<assignment_tag>(In, Out, Keys, num_buckets);
-  }
-
-  size_t block_size = (n - 1) / num_blocks + 1;
-  size_t m = num_blocks * num_buckets;
-#ifdef BREAKDOWN
-  if (parallelism == 1.0) {
-    printf("num_blocks: %zu, num_buckets: %zu, block_size: %zu\n", num_blocks,
-           num_buckets, block_size);
-  }
-#endif
-  auto counts = sequence<s_size_t>::uninitialized(m + 1);
-  counts[m] = 0;
-  parallel_for(0, num_blocks, [&](size_t i) {
-    size_t start = std::min(i * block_size, n);
-    size_t end = std::min(start + block_size, n);
-    s_size_t local_counts[num_buckets];
-    for (size_t j = 0; j < num_buckets; j++) {
-      local_counts[j] = 0;
-    }
-    for (size_t j = start; j < end; j++) {
-      local_counts[Keys[j]]++;
-    }
-    for (size_t j = 0; j < num_buckets; j++) {
-      counts[i * num_buckets + j] = local_counts[j];
-    }
-  });
-
-  auto t_counts = sequence<s_size_t>::uninitialized(m + 1);
-  t_counts[m] = 0;
-  internal::transpose<uninitialized_relocate_tag,
-                      typename sequence<s_size_t>::iterator,
-                      typename sequence<s_size_t>::iterator>(counts.begin(),
-                                                             t_counts.begin())
-      .trans(num_blocks, num_buckets);
-  assert(scan_inplace(make_slice(t_counts)) == n);
-  internal::transpose<uninitialized_relocate_tag,
-                      typename sequence<s_size_t>::iterator,
-                      typename sequence<s_size_t>::iterator>(t_counts.begin(),
-                                                             counts.begin())
-      .trans(num_buckets, num_blocks);
-  // TODO: This should be counts instead of t_counts
-  [[maybe_unused]] auto bucket_offsets = tabulate<size_t>(
-      num_buckets + 1, [&](size_t i) { return t_counts[i * num_blocks]; });
-
-  // parallel_for(0, num_buckets + 1, [&](size_t i) { assert(bucket_offsets[i]
-  // == counts[i * num_buckets]); });
-
-  parallel_for(0, num_blocks, [&](size_t i) {
-    size_t start = std::min(i * block_size, n);
-    size_t end = std::min(start + block_size, n);
-    s_size_t local_counts[num_buckets];
-    for (size_t j = 0; j < num_buckets; j++) {
-      local_counts[j] = counts[i * num_buckets + j];
-    }
-    for (size_t j = start; j < end; j++) {
-      auto &pos = local_counts[Keys[j]];
-      assign_dispatch(Out[pos++], In[j], assignment_tag());
-    }
-  });
-  return bucket_offsets;
-}
 
 template <typename InIterator, typename TmpIterator, typename GetKey>
 void parlay_merge(slice<InIterator, InIterator> A,
@@ -335,19 +249,11 @@ void integer_sort2_(slice<InIterator, InIterator> In,
     return;
   }
 
-  // static const size_t num_threads = num_workers();
   if (n < INTEGER_SORT_BASE_CASE_SIZE || parallelism < .0001) {
     internal::seq_radix_sort<inplace_tag, assignment_tag>(In, Out, Tmp, g,
                                                           key_bits);
     return;
   }
-#ifdef BREAKDOWN
-  if (parallelism == 1.0) {
-    printf("n: %zu, key_bits: %zu, parallelism: %f\n", n, key_bits,
-           parallelism);
-  }
-#endif
-  internal::timer t;
 
   // 1. sampling
   size_t heavy_threshold = log(n);
@@ -477,21 +383,11 @@ void integer_sort2_(slice<InIterator, InIterator> In,
     }
   };
 
-  if (parallelism == 1.0) t.next("sampling");
-
-  internal::timer t_dis;
-
   // 2. count the number of light/heavy keys
   size_t heavy_buckets = heavy_seq.size();
   size_t num_buckets =
       heavy_buckets + light_buckets + 1;  // with an extra overflow buckets
   assert(num_buckets == bucket_id + 1);
-#ifdef BREAKDOWN
-  if (parallelism == 1.0) {
-    printf("### heavy_buckets: %zu\n", heavy_buckets);
-    printf("### light_buckets: %zu\n", light_buckets);
-  }
-#endif
 
   const auto get_bits = delayed_seq<uint16_t>(n, lookup);
 
@@ -507,8 +403,6 @@ void integer_sort2_(slice<InIterator, InIterator> In,
     return;
   }
 
-  if (parallelism == 1.0) t_dis.next("component of distribute: count_sort");
-
   if constexpr (inplace_tag::value == true) {
     parallel_for(0, heavy_buckets, [&](size_t i) {
       size_t start = bucket_offsets[heavy_seq[i].second];
@@ -520,10 +414,6 @@ void integer_sort2_(slice<InIterator, InIterator> In,
     });
   }
 
-  if (parallelism == 1.0) t_dis.next("component of distribute: copy");
-
-  if (parallelism == 1.0) t.next("distribute");
-
   // 3. sort within each bucket
   size_t total_elements = 0;
   for (size_t i = 0; i < light_buckets + 1; i++) {
@@ -534,14 +424,8 @@ void integer_sort2_(slice<InIterator, InIterator> In,
   sequence<size_t> parallel_blocks;
   parallel_blocks.push_back(0);
   size_t cumulative_elements = 0;
-  // if (parallelism == 1.0) {
-  // printf("avg_elements: %zu\n", avg_elements);
-  //}
   for (size_t i = 0; i < light_buckets + 1; i++) {
     if (cumulative_elements >= avg_elements) {
-      // if (parallelism == 1.0) {
-      // printf("cumulative_elements[%4zu]: %9zu\n", i, cumulative_elements);
-      //}
       parallel_blocks.push_back(i);
       cumulative_elements = 0;
     }
@@ -549,9 +433,6 @@ void integer_sort2_(slice<InIterator, InIterator> In,
         bucket_offsets[light_id[i] + 1] - bucket_offsets[light_id[i]];
   }
   parallel_blocks.push_back(light_buckets + 1);
-  if (parallelism == 1.0) {
-    // printf("parallel_blocks.size(): %zu\n", parallel_blocks.size());
-  }
 
   auto &Arr = inplace_tag::value == true ? In : Out;
   auto &Tmp2 = inplace_tag::value == true ? Out : Tmp;
@@ -607,10 +488,6 @@ void integer_sort2_(slice<InIterator, InIterator> In,
         }
       },
       1 / parallelism);
-
-  if (parallelism == 1.0) t.next("local_sort");
-
-  if (parallelism == 1.0) t.next("merge");
 }
 
 template <typename Iterator, typename GetKey>
