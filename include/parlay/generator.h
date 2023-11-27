@@ -1,9 +1,9 @@
 #include <fcntl.h>
 #include <malloc.h>
-#include <parlay/parallel.h>
-#include <parlay/primitives.h>
-#include <parlay/sequence.h>
-#include <parlay/utilities.h>
+#include "parallel.h"
+#include "primitives.h"
+#include "sequence.h"
+#include "utilities.h"
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
