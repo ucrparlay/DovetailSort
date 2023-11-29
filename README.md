@@ -1,7 +1,19 @@
 
 # DovetailSort: A Parallel Integer Sort Algorithm
 This repository contains code for our paper "Parallel Integer Sort: Theory and Practice".
-Our testing code is in ``include/parlay/integer_sort.cpp`` and our algorithm is implemented in ``include/parlay/integer_sort.h``. The rest of the code are from the publicly available library [ParlayLib](https://github.com/cmuparlay/parlaylib).
+DovetailSort is a parallel most-significant digit (MSD) integer sort algorithm, which  that first partitions all keys
+into buckets based on the integer encoding (i.e., 8–12 highest bits), and recurses within each bucket. 
+Our algorithm can avoid sorting heavily duplicated keys in each recursive call by first detecting and splitting them out.
+After light keys are fully sorted, we *dovetail* (merge) the heavy and light keys in increasing order.
+
+
+Our testing code is in ``include/parlay/integer_sort.cpp`` and our algorithm is implemented in ``include/parlay/integer_sort.h``. 
+We provide a generator for the following distributions in ``include/parlay/generator.h``.
+The rest of the code are from the publicly available library [ParlayLib](https://github.com/cmuparlay/parlaylib).
+- Uniform distribution (https://en.wikipedia.org/wiki/Discrete_uniform_distribution)
+- Exponential distribution (https://en.wikipedia.org/wiki/Exponential_distribution)
+- Zipfian distribution (https://en.wikipedia.org/wiki/Zipf%27s_law)
+- Bit-Exponential distribution (An adversarial distribution for integer sort introduced in our paper)
  
 
 Requirements
@@ -29,6 +41,14 @@ Running Code
 numactl -i all ./integer_sort <n>
 ```
 where n is the input size (by default $10^9$). It runs on all synthetic datasets (uniform, exponential, Zipfian, and bit-exponential distributions) with both 32-bit and 64-bit by default.
+
+Applications
+--------
+We provide two representative applications on graph and geometric processing.
+- Graph transpose: Given a directed graph $G=(V,E)$, the graph transpose problem is to generate $G^T=(V, E^T)$ where $E^T=\{(v, u):(u,v):E\}$
+- Morton sort. For a $d$-dimensional point, a z-value is calculated by interleaving the binary representations of each coordinate.
+
+The datasets we use to test the applications can be found in our [Google Drive](https://drive.google.com/drive/folders/1FpAhXxzJPXqc60XiHMEK3DVLMcuNcCOX?usp=sharing).
 
 Contact
 --------
