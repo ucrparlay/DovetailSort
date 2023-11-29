@@ -1,5 +1,3 @@
-#include <fcntl.h>
-#include <malloc.h>
 #include "parallel.h"
 #include "primitives.h"
 #include "sequence.h"
@@ -35,14 +33,6 @@ uint64_t _hash(uint64_t v) {
 }
 
 uint32_t _hash(uint32_t v) {
-  return parlay::hash32(v);
-}
-
-uint16_t _hash(uint16_t v) {
-  return parlay::hash32(v);
-}
-
-uint8_t _hash(uint8_t v) {
   return parlay::hash32(v);
 }
 
@@ -106,7 +96,7 @@ parlay::sequence<T> bits_exp_generator(size_t rate) {
   size_t num_bits = 8 * sizeof(T);
   for (size_t b = 0; b < num_bits; b++) {
     parlay::parallel_for(0, n, [&](size_t i) {
-      if (_hash(i * num_bits + b) % rate != 0) {
+      if (_hash((uint64_t)(i * num_bits + b)) % rate != 0) {
         seq[i] |= static_cast<T>(1) << b;
       }
     });
@@ -189,7 +179,7 @@ parlay::sequence<pair<T, string>> bits_exp_strings_generator(size_t rate) {
   size_t num_bits = 8 * sizeof(T);
   for (size_t b = 0; b < num_bits; b++) {
     parlay::parallel_for(0, n, [&](size_t i) {
-      if (_hash(i * num_bits + b) % rate != 0) {
+      if (_hash((uint64_t)(i * num_bits + b)) % rate != 0) {
         seq[i].first |= static_cast<T>(1) << b;
       }
     });
@@ -258,7 +248,7 @@ parlay::sequence<pair<T, T>> bits_exp_pairs_generator(size_t rate) {
   size_t num_bits = 8 * sizeof(T);
   for (size_t b = 0; b < num_bits; b++) {
     parlay::parallel_for(0, n, [&](size_t i) {
-      if (_hash(i * num_bits + b) % rate != 0) {
+      if (_hash((uint64_t)(i * num_bits + b)) % rate != 0) {
         seq[i].first |= static_cast<T>(1) << b;
       }
     });

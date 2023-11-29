@@ -296,7 +296,7 @@ void integer_sort2_(slice<InIterator, InIterator> In,
   if (top_bits <= log2_light_keys) {
     size_t light_buckets = size_t{1} << top_bits;
     size_t light_mask = light_buckets - 1;
-    auto get_bits = delayed_seq<uint16_t>(n, [&](size_t k) {
+    auto get_bits = delayed_seq<uint16_t>(n, [&](size_t k) -> uint16_t {
       if ((g(In[k]) & bits_mask) > overflow) {
         return light_buckets;
       } else {
