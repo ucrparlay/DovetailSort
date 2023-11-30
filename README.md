@@ -45,7 +45,7 @@ where n is the input size (by default $10^9$). It runs on all synthetic datasets
 Applications
 --------
 We provide two representative applications on graph and geometric processing.
-- Graph transpose: Given a directed graph $G=(V,E)$, the graph transpose problem is to generate $G^T=(V, E^T)$ where $E^T=\{(v, u):(u,v):E\}$
+- Graph transpose: Given a directed graph $G=(V,E)$, the graph transpose problem is to generate $G^T=(V, E^T)$ where $E^T=$ { $(v, u): (u, v) \in E$ }
 - Morton sort. For a $d$-dimensional point, a z-value is calculated by interleaving the binary representations of each coordinate.
 
 The datasets we use to test the applications can be found in our [Google Drive](https://drive.google.com/drive/folders/1FpAhXxzJPXqc60XiHMEK3DVLMcuNcCOX?usp=sharing).
