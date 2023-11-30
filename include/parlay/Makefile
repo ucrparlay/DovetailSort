@@ -37,6 +37,12 @@ ifdef STDALLOC
 CPPFLAGS += -DPARLAY_USE_STD_ALLOC
 endif
 
+ifdef SIZE
+CPPFLAGS += -DSIZE
+else ifdef REP
+CPPFLAGS += -DREP
+endif
+
 all: integer_sort
 
 integer_sort: integer_sort.h integer_sort.cpp internal/integer_sort.h internal/counting_sort.h generator.h

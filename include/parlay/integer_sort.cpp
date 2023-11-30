@@ -149,46 +149,6 @@ void run_all_points(int id = -1) {
 }
 
 template<class T>
-void run_all_sizes(int id = -1) {
-  vector<size_t> sizes{1000000,   2000000,   5000000,   10000000,   20000000,  50000000,
-                       100000000, 200000000, 500000000, 1000000000, 2000000000};
-  for (auto input_size : sizes) {
-    n = input_size;
-    // uniform distribution
-    vector<size_t> num_keys{10000000, 1000};
-    for (auto v : num_keys) {
-      auto seq = uniform_pairs_generator<T>(v);
-      run_all(
-          seq, [](const pair<T, T> &a) { return a.first; }, id);
-    }
-
-    // exponential distribution
-    vector<double> lambda{0.00002, 0.00007};
-    for (auto v : lambda) {
-      auto seq = exponential_pairs_generator<T>(v);
-      run_all(
-          seq, [](const pair<T, T> &a) { return a.first; }, id);
-    }
-
-    // zipfian distribution
-    vector<double> s{0.8, 1.2};
-    for (auto v : s) {
-      auto seq = zipfian_pairs_generator<T>(v);
-      run_all(
-          seq, [](const pair<T, T> &a) { return a.first; }, id);
-    }
-
-    // bits exp distribution
-    vector<size_t> rate{30, 100};
-    for (auto v : rate) {
-      auto seq = bits_exp_pairs_generator<T>(v);
-      run_all(
-          seq, [](const pair<T, T> &a) { return a.first; }, id);
-    }
-  }
-}
-
-template<class T>
 void run_rep_dist(int id = -1) {
   // uniform distribution
   vector<size_t> num_keys{10000000, 1000};
@@ -223,6 +183,17 @@ void run_rep_dist(int id = -1) {
   }
 }
 
+
+template<class T>
+void run_all_sizes(int id = -1) {
+  vector<size_t> sizes{1000000,   2000000,   5000000,   10000000,   20000000,  50000000,
+                       100000000, 200000000, 500000000, 1000000000, 2000000000};
+  for (auto input_size : sizes) {
+    n = input_size;
+    run_rep_dist<T>(id);
+  }
+}
+
 int main(int argc, char *argv[]) {
   if (argc >= 2) {
     n = atoll(argv[1]);
@@ -231,10 +202,18 @@ int main(int argc, char *argv[]) {
   printf("n: %zu\n", n);
 
   int id = 0;
+#ifdef SIZE
+  run_all_sizes<uint32_t>(id);
+  run_all_sizes<uint64_t>(id);
+#elif REP
+  run_rep_dist<uint32_t>(id);
+  run_rep_dist<uint64_t>(id);
+#else
   run_all_dist<uint32_t>(id);
   run_all_dist<uint64_t>(id);
   // run_all_graphs(id);
   // run_all_points(id);
+#endif
 
   return 0;
 }
