@@ -13,7 +13,7 @@ The rest of the code is from the publicly available library [ParlayLib](https://
 - Uniform distribution (https://en.wikipedia.org/wiki/Discrete_uniform_distribution)
 - Exponential distribution (https://en.wikipedia.org/wiki/Exponential_distribution)
 - Zipfian distribution (https://en.wikipedia.org/wiki/Zipf%27s_law)
-- Bits-Exponential distribution (An adversarial distribution for integer sort introduced in our paper)
+- Bit-Exponential distribution (An adversarial distribution for integer sort introduced in our paper)
  
 
 Requirements
