@@ -22,16 +22,21 @@ declare -a commands=(#"taskset -c 0-3:4"                  # 1 thread
                      "numactl -i all"                     # 192 threads
 )
 
+declare -a num_threads=(2 4 8 16 24 48 96 192)
+
 cd include/parlay/
 truncate -s 0 DTSort.tsv
 
 make SERIAL=1 -B
 export PARLAY_NUM_THREADS=1
+printf "1\t" >> DTSort.tsv
 taskset -c 0 ./integer_sort parallel
 
 make -B
 for i in ${!commands[@]}; do
-  ${threads[$i]} ${commands[$i]} ./integer_sort parallel
+  printf "${num_threads[$i]}\t" >> DTSort.tsv
+  export ${threads[$i]}
+  ${commands[$i]} ./integer_sort parallel
 done
 
 cd ../..
