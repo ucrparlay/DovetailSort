@@ -210,8 +210,8 @@ int main(int argc, char *argv[]) {
   } else {
     run_all_dist<uint32_t>(id);
     run_all_dist<uint64_t>(id);
-    run_all_graphs(id);
-    run_all_points(id);
+    // run_all_graphs(id);
+    // run_all_points(id);
   }
 
   return 0;
