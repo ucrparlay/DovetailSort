@@ -150,39 +150,14 @@ void run_all_points(int id = -1) {
 
 template<class T>
 void run_rep_dist(int id = -1) {
-  // uniform distribution
-  vector<size_t> num_keys{10000000, 1000};
-  for (auto v : num_keys) {
-    auto seq = uniform_pairs_generator<T>(v);
-    run_all(
-        seq, [](const pair<T, T> &a) { return a.first; }, id);
-  }
-
-  // exponential distribution
-  vector<double> lambda{0.00002, 0.00007};
-  for (auto v : lambda) {
-    auto seq = exponential_pairs_generator<T>(v);
-    run_all(
-        seq, [](const pair<T, T> &a) { return a.first; }, id);
-  }
-
   // zipfian distribution
-  vector<double> s{0.8, 1.2};
+  vector<double> s{0.8};
   for (auto v : s) {
     auto seq = zipfian_pairs_generator<T>(v);
     run_all(
         seq, [](const pair<T, T> &a) { return a.first; }, id);
   }
-
-  // bits exp distribution
-  vector<size_t> rate{30, 100};
-  for (auto v : rate) {
-    auto seq = bits_exp_pairs_generator<T>(v);
-    run_all(
-        seq, [](const pair<T, T> &a) { return a.first; }, id);
-  }
 }
-
 
 template<class T>
 void run_all_sizes(int id = -1) {
@@ -195,25 +170,29 @@ void run_all_sizes(int id = -1) {
 }
 
 int main(int argc, char *argv[]) {
+  bool parallel_scalability = false;
+  bool sizes_scalability = false;
   if (argc >= 2) {
-    n = atoll(argv[1]);
+    if(!strcmp(argv[1], "parallel")) {
+      parallel_scalability = true;
+    } else if (!strcmp(argv[1], "size")) {
+      sizes_scalability = true;
+    }
   }
   std::cout << "argc = " << argc << std::endl;
   printf("n: %zu\n", n);
 
   int id = 0;
-#ifdef SIZE
-  run_all_sizes<uint32_t>(id);
-  run_all_sizes<uint64_t>(id);
-#elif REP
-  run_rep_dist<uint32_t>(id);
-  run_rep_dist<uint64_t>(id);
-#else
-  run_all_dist<uint32_t>(id);
-  run_all_dist<uint64_t>(id);
-  // run_all_graphs(id);
-  // run_all_points(id);
-#endif
+  if (parallel_scalability) {
+    run_rep_dist<uint32_t>(id);
+  } else if(sizes_scalability) {
+    run_all_sizes<uint32_t>(id);
+  } else {
+    run_all_dist<uint32_t>(id);
+    run_all_dist<uint64_t>(id);
+    run_all_graphs(id);
+    run_all_points(id);
+  }
 
   return 0;
 }
