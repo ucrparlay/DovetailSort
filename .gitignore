@@ -1,3 +1,8 @@
+# Dataset and outputs
+*.bin
+*.geobin
+*.tsv
+
 # Build directory
 build*
 
