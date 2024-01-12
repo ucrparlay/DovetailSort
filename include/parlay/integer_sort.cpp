@@ -94,6 +94,9 @@ void run_all_dist(int id = -1) {
   // uniform distribution
   vector<size_t> num_keys{1000000000, 10000000, 100000, 1000, 10};
   for (auto v : num_keys) {
+    ofstream ofs("DTSort.tsv", ios::app);
+    ofs << "Unif-" + to_string(v) << '\t';
+    ofs.close();
     auto seq = uniform_pairs_generator<T>(v);
     run_all(
         seq, [](const pair<T, T> &a) { return a.first; }, id);
@@ -102,6 +105,9 @@ void run_all_dist(int id = -1) {
   // exponential distribution
   vector<double> lambda{0.00001, 0.00002, 0.00005, 0.00007, 0.0001};
   for (auto v : lambda) {
+    ofstream ofs("DTSort.tsv", ios::app);
+    ofs << "Exp-" + to_string(v) << '\t';
+    ofs.close();
     auto seq = exponential_pairs_generator<T>(v);
     run_all(
         seq, [](const pair<T, T> &a) { return a.first; }, id);
@@ -110,6 +116,9 @@ void run_all_dist(int id = -1) {
   // zipfian distribution
   vector<double> s{0.6, 0.8, 1, 1.2, 1.5};
   for (auto v : s) {
+    ofstream ofs("DTSort.tsv", ios::app);
+    ofs << "Zipf-" + to_string(v) << '\t';
+    ofs.close();
     auto seq = zipfian_pairs_generator<T>(v);
     run_all(
         seq, [](const pair<T, T> &a) { return a.first; }, id);
@@ -118,6 +127,9 @@ void run_all_dist(int id = -1) {
   // bits exp distribution
   vector<size_t> rate{10, 30, 50, 100, 300};
   for (auto v : rate) {
+    ofstream ofs("DTSort.tsv", ios::app);
+    ofs << "BExp-" + to_string(v) << '\t';
+    ofs.close();
     auto seq = bits_exp_pairs_generator<T>(v);
     run_all(
         seq, [](const pair<T, T> &a) { return a.first; }, id);
@@ -125,10 +137,13 @@ void run_all_dist(int id = -1) {
 }
 
 void run_all_graphs(int id = -1) {
-  string path = "/data0/graphs/links/";
+  string path = "../../data/";
   vector<string> graphs = {"soc-LiveJournal1.bin", "twitter.bin", "Cosmo50_5.bin", "sd_arc.bin", "clueweb.bin"};
   for (auto g : graphs) {
     printf("%s\n", g.c_str());
+    ofstream ofs("DTSort.tsv", ios::app);
+    ofs << g << '\t';
+    ofs.close();
     auto seq = read_graph(path + g);
     run_all(
         seq, [](const pair<uint32_t, uint32_t> &a) { return a.first; }, id);
@@ -136,12 +151,15 @@ void run_all_graphs(int id = -1) {
 }
 
 void run_all_points(int id = -1) {
-  string path = "/data0/geometry/";
+  string path = "../../data/";
   vector<string> points = {"GeoLifeNoScale.geobin",   "Cosmo50.geobin",          "OpenStreetMap.geobin",
                            "SS-Varden_1e9_2d.geobin", "SS-Varden_1e9_3d.geobin", "SS-Varden_2e9_2d.geobin",
                            "SS-Varden_2e9_3d.geobin"};
   for (auto p : points) {
     printf("%s\n", p.c_str());
+    ofstream ofs("DTSort.tsv", ios::app);
+    ofs << p << '\t';
+    ofs.close();
     auto seq = read_points(path + p);
     run_all(
         seq, [](const pair<uint32_t, uint32_t> &a) { return a.first; }, id);
@@ -161,9 +179,11 @@ void run_rep_dist(int id = -1) {
 
 template<class T>
 void run_all_sizes(int id = -1) {
-  vector<size_t> sizes{1000000,   2000000,   5000000,   10000000,   20000000,  50000000,
-                       100000000, 200000000, 500000000, 1000000000, 2000000000};
+  vector<size_t> sizes{10000000, 20000000, 50000000, 100000000, 200000000, 500000000, 1000000000, 2000000000};
   for (auto input_size : sizes) {
+    ofstream ofs("DTSort.tsv", ios::app);
+    ofs << input_size << '\t';
+    ofs.close();
     n = input_size;
     run_rep_dist<T>(id);
   }
@@ -173,7 +193,7 @@ int main(int argc, char *argv[]) {
   bool parallel_scalability = false;
   bool sizes_scalability = false;
   if (argc >= 2) {
-    if(!strcmp(argv[1], "parallel")) {
+    if (!strcmp(argv[1], "parallel")) {
       parallel_scalability = true;
     } else if (!strcmp(argv[1], "size")) {
       sizes_scalability = true;
@@ -185,7 +205,7 @@ int main(int argc, char *argv[]) {
   int id = 0;
   if (parallel_scalability) {
     run_rep_dist<uint32_t>(id);
-  } else if(sizes_scalability) {
+  } else if (sizes_scalability) {
     run_all_sizes<uint32_t>(id);
   } else {
     run_all_dist<uint32_t>(id);
