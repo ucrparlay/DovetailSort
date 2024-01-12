@@ -189,7 +189,7 @@ std::pair<sequence<size_t>, bool> count_sort_(slice<InIterator, InIterator> In,
         num_non_zero++;
       }
     }
-    num_non_zero += (bucket_offsets.back() > 0);
+    num_non_zero += (bucket_offsets[light_id.back()] > 0);
   } else {
     for (size_t i = 0; i < num_buckets; i++)
       num_non_zero += (bucket_offsets[i] > 0);

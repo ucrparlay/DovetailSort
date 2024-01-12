@@ -1,15 +1,15 @@
 
 # DovetailSort: A Parallel Integer Sort Algorithm
 This repository contains code for our paper "Parallel Integer Sort: Theory and Practice".
-DovetailSort is a parallel most-significant digit (MSD) integer sort algorithm, which  that first partitions all keys
+DovetailSort is a parallel most-significant digit (MSD) integer sort algorithm, which first partitions all keys
 into buckets based on the integer encoding (i.e., 8–12 highest bits), and recurses within each bucket. 
 Our algorithm can avoid sorting heavily duplicated keys in each recursive call by first detecting and splitting them out.
-After light keys are fully sorted, we *dovetail* (merge) the heavy and light keys in increasing order.
+After the light keys are fully sorted, we *dovetail* (merge) the heavy and light keys in increasing order.
 
 
 Our testing code is in ``include/parlay/integer_sort.cpp`` and our algorithm is implemented in ``include/parlay/integer_sort.h``. 
 We provide a generator for the following distributions in ``include/parlay/generator.h``.
-The rest of the code are from the publicly available library [ParlayLib](https://github.com/cmuparlay/parlaylib).
+The rest of the code is from the publicly available library [ParlayLib](https://github.com/cmuparlay/parlaylib).
 - Uniform distribution (https://en.wikipedia.org/wiki/Discrete_uniform_distribution)
 - Exponential distribution (https://en.wikipedia.org/wiki/Exponential_distribution)
 - Zipfian distribution (https://en.wikipedia.org/wiki/Zipf%27s_law)
