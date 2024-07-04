@@ -56,7 +56,9 @@ If you have any questions, please submit an issue to this repository (recommende
 
 Reference
 --------
-Xiaojun Dong, Laxman Dhulipala, Yan Gu, Yihan Sun. Parallel Integer Sort: Theory and Practice. To appear at *ACM SIGPLAN Symposium on Principles and Practice of Parallel Programming (PPoPP)*, 2024.  
+Xiaojun Dong, Laxman Dhulipala, Yan Gu, Yihan Sun. [Parallel Integer Sort: Theory and Practice](https://dl.acm.org/doi/10.1145/3627535.3638483). *ACM SIGPLAN Symposium on Principles and Practice of Parallel Programming (PPoPP)*, pp. 301-315, 2024.  
+Xiaojun Dong, Laxman Dhulipala, Yan Gu, Yihan Sun. [Parallel Integer Sort: Theory and Practice](https://arxiv.org/abs/2401.00710). *arXiv preprint: 2401.00710*, 2024.  
+
 
 If you use our code, please cite our paper:
 ```
